@@ -1,6 +1,6 @@
 import socket
 import threading
-from os import system
+import os
 
 def sendAll(data: str, exceptClient: socket = None): #отправляем сообщение всем клиентам, кроме exceptClient, но по умолчанию (без аргументов) абсолютно всем
 	global clients
@@ -9,15 +9,29 @@ def sendAll(data: str, exceptClient: socket = None): #отправляем со�
 		if cl != exceptClient:
 			cl.sendall(data.encode("utf-8"))
 
-def listenClient(client: socket, client_addr: tuple, client_nick: str): #слушаем входящие сообщения от клиента, при получении отправляем всем другим клиентам
+def listenClient(client: socket, client_addr: tuple): #слушаем входящие сообщения от клиента, при получении отправляем всем другим клиентам
+	global clients
+	
+	try:
+		data = client.recv(1024)
+		client_nick = data.decode("utf-8")
+		print(f"Клиент {client_nick} ({client_addr[0]}:{client_addr[1]}) подключился к серверу.")
+		sendAll(f"{client_nick} подключился.", client)
+	except Exception as e:
+		print(f"Клиент {client_addr[0]}:{client_addr[1]} не смог подключиться к серверу из-за ошибки \"{e}\".")
+		client.close()
+		clients.remove(client)
+		return
+
 	while True:
 		try:
 			data = client.recv(1024)
 
 			if not data:
-				print("Ошибка подключения к клиенту.\nПерезапустите сервер, когда интернет будет в порядке.")
+				print(f"Клиент {client_nick} ({client_addr[0]}:{client_addr[1]}) отключился от сервера.")
 				client.close()
-				cl.close()
+				clients.remove(client)
+				sendAll(f"{client_nick} отключился.")
 				return
 				
 			try:
@@ -39,7 +53,7 @@ def listenClient(client: socket, client_addr: tuple, client_nick: str): #слу�
 			clients.remove(client)
 			return
 
-system("cls")
+os.system("cls" if os.name == "nt" else "clear")
 
 clients = []
 
@@ -64,14 +78,11 @@ print(f"Сервер инициализирован на порту {serv_port}.
 while True: #слушаем входящие соединения и для каждого нового клиента стартуем поток listenClient
 	try:
 		client, client_addr = serv.accept()
-		data = client.recv(1024).decode("utf-8")
 		clients.append(client)
 
-		t = threading.Thread(target = listenClient, args=(client, client_addr, data))
+		print(f"Клиент {client_addr[0]}:{client_addr[1]} подключается к серверу...")
+		t = threading.Thread(target = listenClient, args=(client, client_addr))
 		t.start()
-
-		print(f"Клиент {data} ({client_addr[0]}:{client_addr[1]}) подключился к серверу.")
-		sendAll(f"{data} подключился.")
 		
 	except ConnectionResetError:
 		pass
