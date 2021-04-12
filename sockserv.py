@@ -19,8 +19,8 @@ def listenClient(client: socket, client_addr: tuple): #слушаем входя
 		sendAll(f"{client_nick} подключился.", client)
 	except Exception as e:
 		print(f"Клиент {client_addr[0]}:{client_addr[1]} не смог подключиться к серверу из-за ошибки \"{e}\".")
-		client.close()
 		clients.remove(client)
+		client.close()
 		return
 
 	while True:
@@ -29,8 +29,8 @@ def listenClient(client: socket, client_addr: tuple): #слушаем входя
 
 			if not data:
 				print(f"Клиент {client_nick} ({client_addr[0]}:{client_addr[1]}) отключился от сервера.")
-				client.close()
 				clients.remove(client)
+				client.close()
 				sendAll(f"{client_nick} отключился.")
 				return
 				
@@ -43,14 +43,14 @@ def listenClient(client: socket, client_addr: tuple): #слушаем входя
 				print("\nОшибка расшифровки входящего сообщения (оно пришло не от клиента?).\n")
 		except ConnectionResetError:
 			print(f"Клиент {client_nick} ({client_addr[0]}:{client_addr[1]}) отключился от сервера.")
-			client.close()
 			clients.remove(client)
+			client.close()
 			sendAll(f"{client_nick} отключился.")
 			return
 		except Exception as e:
 			print(f"Произошла неизвестная ошибка: \"{e}\".\nПерезапустите сервер, когда интернет будет в порядке.")
-			client.close()
 			clients.remove(client)
+			client.close()
 			return
 
 os.system("cls" if os.name == "nt" else "clear")
