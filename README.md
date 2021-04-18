@@ -1,2 +1,2 @@
 # SocketServer
-Клиент-серверная программа на Python с использованием сокетов для создания чат-комнаты.
+Client-server program written in Python with using sockets to create chatroom.
